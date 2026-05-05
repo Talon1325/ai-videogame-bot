@@ -4,4 +4,5 @@ My first personal AI project making an AI video game bot. My goal in this projec
 ## Initial Creation of Bot - Steve
 ## Documentations
 https://pyautogui.readthedocs.io/en/latest/
+
 https://pynput.readthedocs.io/en/latest/
