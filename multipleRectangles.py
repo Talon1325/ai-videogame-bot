@@ -20,9 +20,11 @@ loc = np.where(res >= threshold)
 if loc:
     print("Found needle")
     # loc[::-1] - Reverses loc numpy array to get correct x and y coordinate postions
-    # *loc[::-1] - Turn result into list of arrays
+    # *loc[::-1] - Unpack 2D array into list of arrays
     # zip(*loc[::-1]) - Packages the coodinate positions into tuples where x is the number within each array 
-    # and y is the array being processed. Ex: loc[0] is y = 0, loc[1] is y = 1 and loc[][0] is x = 0, loc[][1] is x = 1
+    # and y is the array being processed in the list. 
+    # 2DExample: loc[0] is y = 0, loc[1] is y = 1 and loc[][0] is x = 0, loc[][1] is x = 1
+    
     for rec in zip(*loc[::-1]):
         top_left = rec
         bottom_right = (rec[0] + w, rec[1] + h)
