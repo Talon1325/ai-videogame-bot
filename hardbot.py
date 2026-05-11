@@ -1,14 +1,12 @@
 # Author: Talon Vorpahl
 # Hardcoded bot to shot at every target within a 3x3 grid on aimlabs
-import pyautogui
-import pynput
 import pydirectinput
 from time import sleep
 import time
 
-def main():
+AIMLABS_3x3_GRID = 30
 
-    pyautogui.FAILSAFE = True
+def main():
 
     # Starts after 5 seconds of hitting run
     print("Starting", end = " ")
@@ -16,15 +14,12 @@ def main():
         sleep(1)
         print(".", end= " ")
     
-    # This moves to the aim lab app on my task bar
-    pydirectinput.moveTo(x=1097, y=1059)
-    pydirectinput.click()
 
     # This moves to the restart button
     pydirectinput.moveTo(x=965, y=773)
     pydirectinput.click()
 
-    # This accpets warning to restart
+    # This accepts warning to restart
     pydirectinput.moveTo(x=818, y=600)
     pydirectinput.click()
 
@@ -39,16 +34,22 @@ def main():
 
     leave = True
     start = time.time()
-    print(start)
     sleep(1)
+
+    # Requires player to click to start the game
     pydirectinput.click()
+
+    # Takes 5 seconds for game to start
     sleep(5)
 
     while leave:
         end = time.time()
-        print(end)
-        if end - start > 30:
+
+        # The duration of Aimlabs 3x3 grid gamemode is 30 seconds
+        if end - start > AIMLABS_3x3_GRID:
             leave = False
+        
+        # Move cursor in each direction
         for i in direction:
             fire(i[0], i[1])
 
