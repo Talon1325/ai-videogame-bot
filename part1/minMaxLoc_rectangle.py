@@ -1,4 +1,8 @@
 import cv2 as cv
+import os
+
+# Change current working directory to the directory this file is in
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Pull haystack image and needle image into usable variables
 haystack_img = cv.imread("Aimlabs_3x3_grid.JPG", cv.IMREAD_UNCHANGED)
@@ -31,6 +35,6 @@ if max_val >= threshold:
     cv.waitKey()
 
     # Write modified image to a file called minMaxLoc.JPG
-    cv.imwrite('minMaLoc.JPG', haystack_img)
+    cv.imwrite('minMaxLoc.JPG', haystack_img)
 else:
     print("Needle not found")
