@@ -3,7 +3,6 @@
 import cv2 as cv
 import numpy as np
 import os
-import pyautogui
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -53,6 +52,7 @@ def findPositions(needle_img_path, haystack_img_path, threshold = 0.65, debug_mo
         if debug_mode:
             cv.imshow('Result', haystack_img)
             cv.waitKey()
+            cv.imwrite('findPositionsPoints.JPG', haystack_img)
         
         return points
         
@@ -60,19 +60,11 @@ def findPositions(needle_img_path, haystack_img_path, threshold = 0.65, debug_mo
     else:
         print("Needle not found")
 
-    # Debug
-    # cv.imshow('Result', haystack_img) 
-    # cv.waitKey()
-    # cv.imwrite('MultipleRectangles.JPG', haystack_img)
-
-
-
-
 def main():
     haystack_img_path = "Aimlabs_3x3_grid_ball.JPG"
     needle_img_path = "Aimlabs_3x3_grid.JPG"
-    points = findPositions(haystack_img_path, needle_img_path, threshold = 0.65, debug_mode = "rectangles")
-    print(points)
+    points = findPositions(haystack_img_path, needle_img_path, threshold = 0.65, debug_mode = "points")
+    # print(points)
 
 
 
