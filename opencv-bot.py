@@ -3,12 +3,14 @@
 import cv2 as cv
 import numpy as np
 import os
-import pyautogui
+import time
+import win32gui, win32ui, win32con
+from frame import Frame
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-def findPositions(needle_img_path, haystack_img_path, threshold = 0.65, debug_mode = None):
-    haystack_img = cv.imread(haystack_img_path, cv.IMREAD_UNCHANGED)
+def findPositions(haystack_img, needle_img_path, threshold = 0.65, debug_mode = None):
+    # haystack_img_path = cv.imread(haystack_img_path, cv.IMREAD_UNCHANGED)
     needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
     needle_w , needle_h = needle_img.shape[1], needle_img.shape[0]
 
@@ -27,7 +29,7 @@ def findPositions(needle_img_path, haystack_img_path, threshold = 0.65, debug_mo
     rectangles , weights = cv.groupRectangles(rectangles, groupThreshold = 2, eps = 0.5)
 
     if len(rectangles):
-        print("Found needle")
+        # print("Found needle")
 
         for (x, y, w, h) in rectangles:
             marker_color = (255, 0, 255)
@@ -49,31 +51,34 @@ def findPositions(needle_img_path, haystack_img_path, threshold = 0.65, debug_mo
 
             if debug_mode == "points":
                 cv.drawMarker(haystack_img, center, marker_color, markerType = marker_type)
-             
+
         if debug_mode:
-            cv.imshow('Result', haystack_img)
-            cv.waitKey()
-        
+            cv.imshow("Video", haystack_img)
+             
         return points
-        
-
-    else:
-        print("Needle not found")
-
-    # Debug
-    # cv.imshow('Result', haystack_img) 
-    # cv.waitKey()
-    # cv.imwrite('MultipleRectangles.JPG', haystack_img)
-
-
 
 
 def main():
-    haystack_img_path = "Aimlabs_3x3_grid_ball.JPG"
-    needle_img_path = "Aimlabs_3x3_grid.JPG"
-    points = findPositions(haystack_img_path, needle_img_path, threshold = 0.65, debug_mode = "rectangles")
-    print(points)
 
+    framecap = Frame('aimlab_tb')
+
+    loop_time = time.time()
+    while(True):
+
+        frame = framecap.get_frame()
+        needle_img_path = "Aimlabs_3x3_grid_ball.JPG"
+        points = findPositions(frame, needle_img_path, threshold = 0.65, debug_mode = "rectangles")
+
+        # cv.imshow('Video', frame)
+
+        # FPS
+        print('FPS {}'.format(1 / (time.time() - loop_time)))
+        loop_time = time.time()
+
+        if cv.waitKey(1) == ord('q'):
+            cv.destroyAllWindows()
+            break
+    print("Done")
 
 
 
