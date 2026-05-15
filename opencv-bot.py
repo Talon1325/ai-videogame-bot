@@ -21,7 +21,9 @@ def main():
     while(True):
 
         frame = framecap.get_frame()
-        points = detect.findPositions(frame, threshold = 0.65, debug_mode = "rectangles")
+        rectangles = detect.findRectangles(frame, threshold = 0.65)
+        frame = detect.drawRectangles(frame, rectangles)
+        cv.imshow("Detection", frame)
 
         # FPS
         print('FPS {}'.format(1 / (time.time() - loop_time)))
