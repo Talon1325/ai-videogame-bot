@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from hsvfilter import Filter
+from part9.hsvfilter import Filter
 
 class Detection:
     # Tracker
@@ -13,14 +13,13 @@ class Detection:
     method = None
 
     # constructor
-    def __init__(self, needle_img_path = None, method = cv.TM_CCOEFF_NORMED):
-        if needle_img_path:
-            # load image into OpenCV format
-            self.needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
+    def __init__(self, needle_img_path, method = cv.TM_CCOEFF_NORMED):
+        # load image into OpenCV format
+        self.needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
 
-            # Get the width and height of needle image
-            self.needle_w = self.needle_img.shape[1]
-            self.needle_h = self.needle_img.shape[0]
+        # Get the width and height of needle image
+        self.needle_w = self.needle_img.shape[1]
+        self.needle_h = self.needle_img.shape[0]
 
         # Select which method to use for Match Template
         self.method = method

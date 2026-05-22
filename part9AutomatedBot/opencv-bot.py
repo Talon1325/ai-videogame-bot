@@ -11,14 +11,19 @@ from hsvfilter import Filter
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+# Capture window of the game for object detection
 framecap = Frame('aimlab_tb')
+
+# Basic detection
 detect = Detection("Aimlabs_3x3_grid_ball.JPG")
 
 # Use this object to test accuracy of detection using hsv filter/thresholding
 detect_hsv = Detection("Aimlabs_3x3_grid_ball_processed.JPG")
 
-detect.init_control_gui()
+# GUI control window to change hsv
+# detect.init_control_gui()
 
+# HSV settings for best detection
 hsv_filter = Filter(0, 219, 0, 132, 255, 255, 0, 0, 0, 128)
 
 # Example of static method, not need for self and can call using class name instead of a object of class

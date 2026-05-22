@@ -35,7 +35,7 @@ def main():
         detect_image = detect.drawRectangles(frame, rectangles)
 
         # Show processed ebject detection 
-        cv.imshow("Unprocessed", detect_image)
+        cv.imshow("ML process", detect_image)
 
         # FPS
         print('FPS {}'.format(1 / (time.time() - loop_time)))
