@@ -1,4 +1,4 @@
-
+# Custom data structure to hold hsv filter data
 class Filter:
 
     # constructor
