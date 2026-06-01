@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
-from part9.hsvfilter import Filter
+from hsvfilter import Filter
+from threading import Thread, Lock
 
 class Detection:
     # Tracker
@@ -12,17 +13,28 @@ class Detection:
     needle_w = 0
     method = None
 
+    lock = None
+    stopped = True
+    frame = None
+    rectangles = []
+    hsv_filter = None
+
     # constructor
     def __init__(self, needle_img_path, method = cv.TM_CCOEFF_NORMED):
-        # load image into OpenCV format
-        self.needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
+        if needle_img_path:
+            # load image into OpenCV format
+            self.needle_img = cv.imread(needle_img_path, cv.IMREAD_UNCHANGED)
 
-        # Get the width and height of needle image
-        self.needle_w = self.needle_img.shape[1]
-        self.needle_h = self.needle_img.shape[0]
+            # Get the width and height of needle image
+            self.needle_w = self.needle_img.shape[1]
+            self.needle_h = self.needle_img.shape[0]
 
+        # create thread lock object
+        self.lock = Lock()
         # Select which method to use for Match Template
         self.method = method
+        # HSV settings for best detection
+        self.hsv_filter = Filter(0, 219, 0, 132, 255, 255, 0, 0, 0, 128)
 
 
     # This finds all images that match needle image and draws a rectangle around it 
@@ -173,3 +185,32 @@ class Detection:
             c[c <= lim] = 0
             c[c > lim] -= amount
         return c
+    
+
+
+    # update image to do detection on with hsv filter
+    def update(self, frame):
+        self.lock.acquire()
+        self.frame = self.apply_hsv_filter(frame, self.hsv_filter)
+        self.lock.release()
+
+    # start the thread for getting rectangles for the current frame
+    def start(self):
+        self.stopped = False
+        t = Thread(target=self.run)
+        t.start()
+        
+    # Stop the thread
+    def stop(self):
+        self.stopped = True
+        
+    # Function to run in thread
+    def run(self):
+        while not self.stopped:
+            if not self.frame is None:
+                # do object detectiuon
+                rectangles = self.findRectangles(self.frame)
+                # update detection with lock
+                self.lock.acquire()
+                self.rectangles = rectangles
+                self.lock.release()

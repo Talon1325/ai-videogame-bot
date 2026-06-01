@@ -1,8 +1,14 @@
 import numpy as np
 import win32gui, win32ui, win32con
 from ctypes import windll
+from threading import Thread, Lock
 
 class Frame:
+
+    stopped = True
+    lock = None
+    frame = None
+    pixel = None
 
     # properties
     w = 0
@@ -10,7 +16,13 @@ class Frame:
     hwnd = None
     window_check = False
 
+    offset_x = 0
+    offset_y = 0
+
     def __init__(self, window_name = None):
+        # create thread lock object
+        self.lock = Lock()
+
         # Define which window to use
         # This is another way of trying to fix the black screen problem
         # by getting the desktop window if no window is found
@@ -23,6 +35,7 @@ class Frame:
                 raise Exception("Window not found: {}".format(window_name))
         
         # Define width and height of Image
+        window_rect = win32gui.GetWindowRect(self.hwnd)
         self.w = 1920
         self.h = 1080
 
@@ -47,7 +60,7 @@ class Frame:
         # overlays, or exclusive fullscreen rendering. Aim Lab is likely bypassing the normal GDI desktop compositor, 
         # so GDI capture APIs only see an empty/black surface.
         if self.window_check: 
-            cDC.BitBlt((0, 0), (self.w, self.h), dcObj, (0, 0), win32con.SRCCOPY) 
+            cDC.BitBlt((0, 0), (self.w, self.h), dcObj, (0,0), win32con.SRCCOPY) 
 
         # For this to still work the game must be in Fullscreen Windowed or Windowed
         # The Print Window function fits the window grabbed, so there is not need for 
@@ -92,3 +105,25 @@ class Frame:
                 print(hex(hwnd), win32gui.GetWindowText(hwnd))
         win32gui.EnumWindows(winEnumHandler, None)
 
+    def get_screen_position(self, pos):
+        return (pos[0] + self.offset_x, pos[1] + self.offset_y)
+
+    # start the thread to get and update the image
+    def start(self):
+        self.stopped = False
+        t = Thread(target=self.run)
+        t.start()
+        
+    # stop the thread
+    def stop(self):
+        self.stopped = True
+    
+    # Function to be run when thread is started
+    def run(self):
+        while not self.stopped:
+            # get image
+            frame = self.get_frame()
+            # update the image while thread is locked
+            self.lock.acquire()
+            self.frame = frame
+            self.lock.release()
