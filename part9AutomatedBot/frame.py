@@ -2,6 +2,7 @@ import numpy as np
 import win32gui, win32ui, win32con
 from ctypes import windll
 from threading import Thread, Lock
+import mss
 
 class Frame:
 
@@ -39,6 +40,16 @@ class Frame:
         self.w = 1920
         self.h = 1080
 
+    # Since windows GUI and UI are not working in aimlabs 3D environment,
+    # I am attempting to use mss to capture frame instead
+    def get_frame_mss(self):
+        with mss.mss() as sct:
+            # Define your exact scanning bounding box region
+            monitor = {"top": 0, "left": 0, "width": self.w, "height": self.h}
+            # sct.grab directly captures hardware-accelerated buffers
+            raw_frame = np.array(sct.grab(monitor))
+            return raw_frame
+        
 
     # Using windows GUI and UI, take a window screenshot and convert it to OpenCV format 
     # and optimize it to be faster than pyautogui screenshot

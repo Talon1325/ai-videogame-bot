@@ -6,8 +6,7 @@ import time
 from frame import Frame
 from detection import Detection
 from opencv_bot import Bot, BotState
-from threading import Thread
-import numpy as np
+
 
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -51,25 +50,26 @@ def main():
         detect_hsv.update(framecap.frame)
         
         targets = detect_hsv.clickPoints(detect_hsv.rectangles)
+        bot.update_targets(targets)
+        bot.update_frame(detect_hsv.frame)
 
+        # # Bot states and actions
+        # if bot.state == BotState.INITIALIZE:
+        #     # Collect the click points and update the targets locations for bot while initializing
+        #     bot.update_targets(targets)
+        #     bot.update_frame(framecap.frame)
 
-        # Bot states and actions
-        if bot.state == BotState.INITIALIZE:
-            # Collect the click points and update the targets locations for bot while initializing
-            bot.update_targets(targets)
-            bot.update_frame(framecap.frame)
+        # elif bot.state == BotState.SEARCH:
+        #     # When searching the bot needs the next set of click points, 
+        #     bot.update_targets(targets)
+        #     # and the next frame
+        #     bot.update_frame(framecap.frame)
 
-        elif bot.state == BotState.SEARCH:
-            # When searching the bot needs the next set of click points, 
-            bot.update_targets(targets)
-            # and the next frame
-            bot.update_frame(framecap.frame)
-
-        elif bot.state == BotState.CLICK:
-            # For 100% accuracy don't click until mouse is at location
-            bot.update_targets(targets)
-            bot.update_frame(framecap.frame)
-            pass
+        # elif bot.state == BotState.CLICK:
+        #     # For 100% accuracy don't click until mouse is at location
+        #     bot.update_targets(targets)
+        #     bot.update_frame(framecap.frame)
+            
 
 
         if DEBUG:
@@ -77,7 +77,7 @@ def main():
             output_frame = detect_hsv.drawRectangles(detect_hsv.frame, detect_hsv.rectangles)
 
             # Show processed ebject detection 
-            cv.imshow("Detection", output_frame)
+            cv.imshow("Detection", detect_hsv.frame)
             # Try mose call back to get color of mouse postion
 
 

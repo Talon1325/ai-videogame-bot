@@ -1,7 +1,6 @@
 from threading import Thread, Lock
 from enum import Enum
 import time
-import pyautogui
 import math
 import pydirectinput
 import numpy as np
@@ -20,17 +19,19 @@ class BotState(Enum):
 
 class Bot:
     # Disable the built-in delay for maximum throughput execution
-    # pydirectinput.PAUSE = 0
+    pydirectinput.PAUSE = 0.001
 
     stopped = True
     lock = None
     state = None
-    MOVEMENT_STOPPED_THRESHOLD = .99
 
     targets = []
     my_pos = (0,0)
     frame = None
     movement_frame = None
+    hsv_img = None
+    hue = 0
+    target = []
 
     window_offset = (0,0)
     w = 0
@@ -60,56 +61,37 @@ class Bot:
 
     # This function will check if the player is on the target
     def on_target(self):
-
-        if self.movement_frame is None:
-            self.movement_frame = self.frame.copy()
-
-        # # compare the old screenshot to the new screenshot
-        # result = cv.matchTemplate(self.frame, self.movement_frame, cv.TM_CCOEFF_NORMED)
-        # # we only care about the value when the two screenshots are laid perfectly over one 
-        # # another, so the needle position is (0, 0). since both images are the same size, this
-        # # should be the only result that exists anyway
-        # similarity = result[0][0]
-        # print('Movement detection similarity: {}'.format(similarity))
-
-        # if similarity >= self.MOVEMENT_STOPPED_THRESHOLD:
-        #     return True
-        
-
-
-
         # Using the center of the frame we can find the color 
         # if the color is 120 = blue, then click else continue seraching
-        hsv_img = cv.cvtColor(self.movement_frame, cv.COLOR_BGR2HSV)
-        hsv_pixel = hsv_img[540,960]
-        hue = hsv_pixel[0]
-        print(hsv_pixel)
-        # if hue == 90:
-        #     return True
-        # return False
-
-        self.movement_frame = self.frame.copy()
+        hsv_pixel = self.hsv_img[540,960]
+        sat = hsv_pixel[1]
+        val = hsv_pixel[2]
+        self.hue = hsv_pixel[0]
+        # inrange = self.offset_x >= -2 and self.offset_x <= 2 and self.offset_y >= -2 and self.offset_y <= 2
+        if self.hue == 120:
+            # self.offset_x = self.offset_x/20
+            # self.offset_y = self.offset_y/20
+            return True
         return False
 
-    def target_found(self):
+    def target_search(self):
         # We want to move to the closest target from the last position we clicked on 
         # And since our mouse position is always in the middle, it will be the closest postion
         # to the middle of the screen
         targets = self.targets_ordered_by_distance(self.targets)
-        self.offset_x = int(targets[0][0] - self.my_pos[0])
-        self.offset_y = int(targets[0][1] - self.my_pos[1])
-        # print(self.offset_x, self.offset_y)
-        # print(self.my_pos)
-        # print(targets[0][0], targets[0][1])
+        target = targets[0]
+        self.offset_x = int((target[0] - self.my_pos[0])/40)
+        self.offset_y = int((target[1] - self.my_pos[1])/40)
+
 
         pydirectinput.move(xOffset = self.offset_x, yOffset = self.offset_y, relative=True)
 
         # Checks if mouse is on blue target
         if self.on_target():
-            return True
-        
+            pydirectinput.click(interval=0.3)
         # Else keep searching for target
-        return False
+
+
 
     def targets_ordered_by_distance(self, targets):
 
@@ -138,6 +120,7 @@ class Bot:
     def update_frame(self, frame):
         self.lock.acquire()
         self.frame = frame
+        self.hsv_img = cv.cvtColor(self.frame, cv.COLOR_BGR2HSV)
         self.lock.release()
 
     def start(self):
@@ -153,7 +136,7 @@ class Bot:
             
             if self.state == BotState.INITIALIZE:
                 if not self.start_click:
-                    pyautogui.click()
+                    pydirectinput.click()
                     self.start_click = True
                 if time.time() > self.start_time + self.INITIAL_WAIT_TIME:
                     self.lock.acquire()
@@ -161,14 +144,8 @@ class Bot:
                     self.lock.release()
 
             elif self.state == BotState.SEARCH:
-                if self.target_found():
-                    self.lock.acquire()
-                    self.state = BotState.CLICK
-                    self.lock.release()
+                self.target_search()
 
-            elif self.state == BotState.CLICK:
-                pydirectinput.click()
-                self.lock.acquire()
-                self.state = BotState.SEARCH
-                self.lock.release()
+
+
 
